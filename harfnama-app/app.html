@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ur" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Harfnama — Document to Handwritten Font Converter</title>
+<meta name="description" content="Upload a PDF, Word, or text file and convert it into beautiful handwritten or custom fonts, including Urdu Nastaliq. Export as PDF, Word, PNG, or HTML — free and works in your browser."/>
+
+<!-- ════════════════════════════════════════════════
+     ADSENSE SITE VERIFICATION
+     After you sign up at adsense.google.com, Google gives you
+     one <script> tag to paste here (in <head>) to verify the site.
+     It looks like:
+     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+     Paste it right below this comment once you have it.
+     ════════════════════════════════════════════════ -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Dancing+Script:wght@400;700&family=Pacifico&family=Indie+Flower&family=Patrick+Hand&family=Satisfy&family=Kalam:wght@400;700&family=Permanent+Marker&family=Noto+Nastaliq+Urdu:wght@400;700&family=Noto+Naskh+Arabic:wght@400;700&display=swap" rel="stylesheet"/>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
+
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<a href="#paperScroll" class="skip-link">Skip to output</a>
+<div id="prog" role="progressbar" aria-label="Loading"></div>
+<div class="ov" id="ov" role="status" aria-live="polite"><div class="ovbox"><div class="ovspin" aria-hidden="true">⏳</div><div class="ovmsg" id="ovmsg">Preparing...</div></div></div>
+
+<div class="topbar">
+  <div class="logo">Harf<span>nama</span></div>
+  <div class="topbar-r">
+    <span id="saveIndicator">💾 Saved</span>
+    <span>PDF · DOCX · TXT → Lined Paper → Export</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     AD SLOT 1 — Top banner
+     Replace this <div> with your real AdSense <ins> code
+     after approval. Until then it stays invisible (height:0)
+     so it never breaks layout or looks like a broken ad.
+     ════════════════════════════════════════════════ -->
+<div class="ad-slot ad-slot-top" id="adSlotTop">
+  <!--
+  Paste your AdSense unit here, e.g.:
+  <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXX"
+       data-ad-slot="XXXXXXXXXX" data-ad-format="auto" data-full-width-responsive="true"></ins>
+  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  -->
+</div>
+
+<div class="main">
+<div class="layout">
+
+  <!-- LEFT -->
+  <div>
+    <div class="panel">
+      <div class="pt">📂 File Upload</div>
+      <div class="upzone" id="dz">
+        <input type="file" id="fi" accept=".pdf,.docx,.doc,.txt" aria-label="Upload document file"/>
+        <div class="up-icon" aria-hidden="true">📄</div>
+        <div class="up-txt">Click or Drag to Upload</div>
+        <div class="up-sub">PDF · DOCX · TXT (max 15MB)</div>
+      </div>
+      <div id="badge"></div>
+    </div>
+
+    <div class="panel">
+      <div class="pt">🔤 Font</div>
+      <div class="ftabs" role="tablist" aria-label="Font category">
+        <button class="ftab on" role="tab" aria-selected="true" onclick="switchTab('latin',this)">English</button>
+        <button class="ftab urd" role="tab" aria-selected="false" onclick="switchTab('urdu',this)">اردو</button>
+        <button class="ftab" role="tab" aria-selected="false" onclick="switchTab('all',this)">Sab</button>
+      </div>
+      <div class="fgrid" id="fgrid" role="listbox" aria-label="Font choices"></div>
+      <div class="cfrow">
+        <input type="file" id="cfi" accept=".ttf,.otf,.woff,.woff2" aria-label="Upload custom font"/>
+        <span style="font-size:15px" aria-hidden="true">➕</span>
+        <span style="font-size:12px;color:var(--muted)">Upload Your Own Font</span>
+        <span class="cfname" id="cfname"></span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="pt">📐 Paper Size</div>
+      <div class="szgrid" id="szgrid" role="group" aria-label="Paper size">
+        <button class="szbtn on" data-w="794" data-h="1123" onclick="setPaper(this)">A4<span class="szlbl">210×297mm</span></button>
+        <button class="szbtn" data-w="816" data-h="1056" onclick="setPaper(this)">Letter<span class="szlbl">8.5×11in</span></button>
+        <button class="szbtn" data-w="794" data-h="1008" onclick="setPaper(this)">Legal<span class="szlbl">8.5×14in</span></button>
+        <button class="szbtn" data-w="1123" data-h="794" onclick="setPaper(this)">A4 L<span class="szlbl">Landscape</span></button>
+        <button class="szbtn" data-w="595" data-h="842" onclick="setPaper(this)">A5<span class="szlbl">148×210mm</span></button>
+        <button class="szbtn" data-w="1190" data-h="1684" onclick="setPaper(this)">A3<span class="szlbl">297×420mm</span></button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="pt">📏 Lines Style</div>
+      <div class="lineopts" id="lineOpts" role="group" aria-label="Paper line style">
+        <button class="lbtn on" data-style="none" onclick="setLS(this)" aria-pressed="true">
+          <svg width="38" height="26" viewBox="0 0 38 26" aria-hidden="true"><rect width="38" height="26" fill="#f5f5f5" rx="3"/></svg>
+          <span>Blank</span>
+        </button>
+        <button class="lbtn" data-style="ruled" onclick="setLS(this)" aria-pressed="false">
+          <svg width="38" height="26" viewBox="0 0 38 26" aria-hidden="true"><rect width="38" height="26" fill="#f5f5f5" rx="3"/>
+            <line x1="2" y1="8" x2="36" y2="8" stroke="#90b8d8" stroke-width="1"/>
+            <line x1="2" y1="16" x2="36" y2="16" stroke="#90b8d8" stroke-width="1"/>
+            <line x1="2" y1="24" x2="36" y2="24" stroke="#90b8d8" stroke-width="1"/>
+          </svg><span>Ruled</span>
+        </button>
+        <button class="lbtn" data-style="margin" onclick="setLS(this)" aria-pressed="false">
+          <svg width="38" height="26" viewBox="0 0 38 26" aria-hidden="true"><rect width="38" height="26" fill="#f5f5f5" rx="3"/>
+            <line x1="9" y1="2" x2="9" y2="24" stroke="#e08080" stroke-width="1.2"/>
+            <line x1="11" y1="8" x2="36" y2="8" stroke="#90b8d8" stroke-width="1"/>
+            <line x1="11" y1="16" x2="36" y2="16" stroke="#90b8d8" stroke-width="1"/>
+            <line x1="11" y1="24" x2="36" y2="24" stroke="#90b8d8" stroke-width="1"/>
+          </svg><span>Margin</span>
+        </button>
+        <button class="lbtn" data-style="grid" onclick="setLS(this)" aria-pressed="false">
+          <svg width="38" height="26" viewBox="0 0 38 26" aria-hidden="true"><rect width="38" height="26" fill="#f5f5f5" rx="3"/>
+            <line x1="10" y1="2" x2="10" y2="24" stroke="#b8d8b8" stroke-width=".8"/>
+            <line x1="20" y1="2" x2="20" y2="24" stroke="#b8d8b8" stroke-width=".8"/>
+            <line x1="30" y1="2" x2="30" y2="24" stroke="#b8d8b8" stroke-width=".8"/>
+            <line x1="2" y1="8" x2="36" y2="8" stroke="#b8d8b8" stroke-width=".8"/>
+            <line x1="2" y1="18" x2="36" y2="18" stroke="#b8d8b8" stroke-width=".8"/>
+          </svg><span>Grid</span>
+        </button>
+        <button class="lbtn" data-style="dots" onclick="setLS(this)" aria-pressed="false">
+          <svg width="38" height="26" viewBox="0 0 38 26" aria-hidden="true"><rect width="38" height="26" fill="#f5f5f5" rx="3"/>
+            <circle cx="10" cy="8" r="1.2" fill="#aaa"/><circle cx="20" cy="8" r="1.2" fill="#aaa"/><circle cx="30" cy="8" r="1.2" fill="#aaa"/>
+            <circle cx="10" cy="18" r="1.2" fill="#aaa"/><circle cx="20" cy="18" r="1.2" fill="#aaa"/><circle cx="30" cy="18" r="1.2" fill="#aaa"/>
+          </svg><span>Dotted</span>
+        </button>
+        <button class="lbtn" data-style="college" onclick="setLS(this)" aria-pressed="false">
+          <svg width="38" height="26" viewBox="0 0 38 26" aria-hidden="true"><rect width="38" height="26" fill="#f5f5f5" rx="3"/>
+            <line x1="9" y1="2" x2="9" y2="24" stroke="#e08080" stroke-width="1.2"/>
+            <line x1="11" y1="6" x2="36" y2="6" stroke="#90b8d8" stroke-width=".8"/>
+            <line x1="11" y1="11" x2="36" y2="11" stroke="#90b8d8" stroke-width=".8"/>
+            <line x1="11" y1="17" x2="36" y2="17" stroke="#90b8d8" stroke-width=".8"/>
+            <line x1="11" y1="23" x2="36" y2="23" stroke="#90b8d8" stroke-width=".8"/>
+          </svg><span>College</span>
+        </button>
+      </div>
+      <div class="crow" style="margin-top:8px">
+        <label class="clbl" for="lgap">Gap</label>
+        <input type="range" id="lgap" min="24" max="60" value="36" step="2" oninput="lval.textContent=this.value+'px';redrawLines()"/>
+        <span class="cval" id="lval">36px</span>
+      </div>
+      <div class="crow">
+        <label class="clbl" for="lcolor">Line 🎨</label>
+        <input type="color" class="cswatch" id="lcolor" value="#b8d4e8" oninput="redrawLines()"/>
+        <label class="clbl" for="pgbg" style="margin-left:6px">BG 🎨</label>
+        <input type="color" class="cswatch" id="pgbg" value="#ffffff" oninput="updatePgBg()"/>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="pt">⚙️ Text Style</div>
+      <div class="crow">
+        <label class="clbl" for="tsize">Size</label>
+        <input type="range" id="tsize" min="12" max="54" value="18" step="1" oninput="updateTSize(this.value)"/>
+        <span class="cval" id="tsizev">18px</span>
+      </div>
+      <div class="crow">
+        <label class="clbl" for="tcolor">Color</label>
+        <input type="color" class="cswatch" id="tcolor" value="#1a1a1a" oninput="updateTColor()"/>
+      </div>
+      <div class="crow">
+        <span class="clbl">Dir</span>
+        <button class="btn" id="rtlbtn" onclick="toggleRTL()" aria-pressed="false">LTR →</button>
+        <span style="font-size:11px;color:var(--hint);margin-left:4px">Urdu = RTL</span>
+      </div>
+      <div class="crow">
+        <span class="clbl">Zoom</span>
+        <div class="zoomrow">
+          <button class="zoombtn" onclick="zoomOut()" aria-label="Zoom out">−</button>
+          <span class="zoomval" id="zoomval">100%</span>
+          <button class="zoombtn" onclick="zoomIn()" aria-label="Zoom in">+</button>
+          <button class="zoombtn" onclick="zoomFit()" aria-label="Fit to screen" style="width:auto;padding:0 6px;font-size:10px">Fit</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="out-wrap">
+    <div class="out-tb">
+      <span class="tb-lbl">📄 Paper Preview</span>
+      <div class="dlwrap" id="dlwrap">
+        <button class="dlbtn" onclick="toggleDl()" aria-haspopup="true" aria-expanded="false" id="dlbtnEl">⬇️ Download ▼</button>
+        <div class="dlmenu" id="dlmenu" role="menu">
+          <button class="dli" onclick="dlDOCX()" role="menuitem"><span class="ico" aria-hidden="true">📘</span><span class="inf"><span class="iname">Word (.docx)</span><span class="idesc">Microsoft Word</span></span></button>
+          <button class="dli" onclick="dlPDF()" role="menuitem"><span class="ico" aria-hidden="true">📕</span><span class="inf"><span class="iname">PDF (lines + font)</span><span class="idesc">Print-ready, all pages</span></span></button>
+          <button class="dli" onclick="dlPNG()" role="menuitem"><span class="ico" aria-hidden="true">🖼️</span><span class="inf"><span class="iname">PNG Image</span><span class="idesc">High-res, all pages</span></span></button>
+          <div class="divr"></div>
+          <button class="dli" onclick="dlHTML()" role="menuitem"><span class="ico" aria-hidden="true">🌐</span><span class="inf"><span class="iname">HTML File</span><span class="idesc">Font + lines embed</span></span></button>
+          <button class="dli" onclick="dlTXT()" role="menuitem"><span class="ico" aria-hidden="true">📄</span><span class="inf"><span class="iname">Plain Text</span><span class="idesc">.txt</span></span></button>
+        </div>
+      </div>
+      <button class="btn" onclick="copyTxt()">📋 Copy</button>
+      <button class="btn danger mla" onclick="clearAll()">🗑️ Clear</button>
+    </div>
+
+    <!-- ════════════════════════════════════════════════
+         FORMATTING TOOLBAR — Word-style rich text controls.
+         Acts on the current text selection inside the active page.
+         ════════════════════════════════════════════════ -->
+    <div class="fmt-tb" id="fmtTb" role="toolbar" aria-label="Text formatting">
+      <button class="fmtbtn" data-cmd="bold" onmousedown="event.preventDefault()" onclick="fmtExec('bold')" aria-label="Bold" title="Bold (Ctrl+B)"><b>B</b></button>
+      <button class="fmtbtn" data-cmd="italic" onmousedown="event.preventDefault()" onclick="fmtExec('italic')" aria-label="Italic" title="Italic (Ctrl+I)"><i>I</i></button>
+      <button class="fmtbtn" data-cmd="underline" onmousedown="event.preventDefault()" onclick="fmtExec('underline')" aria-label="Underline" title="Underline (Ctrl+U)"><u>U</u></button>
+
+      <span class="fmt-sep"></span>
+
+      <button class="fmtbtn" data-cmd="justifyLeft" onmousedown="event.preventDefault()" onclick="fmtExec('justifyLeft')" aria-label="Align left" title="Align left">⟸</button>
+      <button class="fmtbtn" data-cmd="justifyCenter" onmousedown="event.preventDefault()" onclick="fmtExec('justifyCenter')" aria-label="Align center" title="Align center">⟺</button>
+      <button class="fmtbtn" data-cmd="justifyRight" onmousedown="event.preventDefault()" onclick="fmtExec('justifyRight')" aria-label="Align right" title="Align right">⟹</button>
+
+      <span class="fmt-sep"></span>
+
+      <label class="fmtcolor" title="Text color">
+        <span aria-hidden="true">A</span>
+        <input type="color" id="fmtColor" value="#1a1a1a" onmousedown="event.stopPropagation()" oninput="fmtExec('foreColor', this.value)"/>
+      </label>
+      <label class="fmtcolor" title="Highlight color">
+        <span aria-hidden="true" style="text-decoration:underline">H</span>
+        <input type="color" id="fmtHighlight" value="#fff59d" onmousedown="event.stopPropagation()" oninput="fmtExec('hiliteColor', this.value)"/>
+      </label>
+
+      <span class="fmt-sep"></span>
+
+      <button class="fmtbtn" onmousedown="event.preventDefault()" onclick="insertTable()" aria-label="Insert table" title="Insert table">▦ Table</button>
+      <button class="fmtbtn" onmousedown="event.preventDefault()" onclick="fmtExec('removeFormat')" aria-label="Clear formatting" title="Clear formatting">✕ Clear</button>
+    </div>
+
+    <div class="paper-scroll" id="paperScroll" tabindex="-1">
+      <div class="paper-zoom-wrap" id="paperZoomWrap"></div>
+    </div>
+
+
+    <div class="out-foot">
+      <span id="charcnt">0 chars</span>·<span id="wordcnt">0 words</span>·
+      <span id="fontlbl">Font: Caveat</span>·<span id="pagelbl">1 page</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ════════════════════════════════════════════════
+     AD SLOT 2 — Bottom of page (inside .main, below the tool)
+     Same idea: paste real AdSense <ins> code here after approval.
+     ════════════════════════════════════════════════ -->
+<div class="ad-slot ad-slot-bottom" id="adSlotBottom">
+  <!-- AdSense unit goes here -->
+</div>
+
+<div class="app-credit">
+  <span>Harfnama by <strong>Muhammad Taha Ahmad</strong></span>
+  <a href="https://github.com/NinjaVinja" target="_blank" rel="noopener noreferrer" aria-label="GitHub profile" title="GitHub">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.57.1.78-.25.78-.55 0-.27-.01-1.16-.02-2.1-3.2.7-3.88-1.36-3.88-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.1 11.1 0 0 1 5.79 0c2.21-1.49 3.18-1.18 3.18-1.18.63 1.59.23 2.76.11 3.05.74.8 1.19 1.83 1.19 3.09 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.07.78 2.16 0 1.56-.01 2.82-.01 3.2 0 .31.21.66.79.55C20.21 21.38 23.5 17.08 23.5 12 23.5 5.65 18.35.5 12 .5Z"/></svg>
+  </a>
+  <a href="https://www.linkedin.com/in/muhammad-taha-ahmad-391679262/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn profile" title="LinkedIn">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.38-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28ZM5.34 7.43a2.07 2.07 0 1 1 0-4.13 2.07 2.07 0 0 1 0 4.13ZM7.12 20.45H3.56V9h3.56v11.45Z"/></svg>
+  </a>
+</div>
+
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
