@@ -19,7 +19,8 @@ a.skip-link:focus{left:0}
 
 /* topbar */
 .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex;align-items:center;gap:.75rem;height:52px;position:sticky;top:0;z-index:100}
-.logo{font-size:19px;font-weight:700;color:var(--accent);letter-spacing:-.5px}
+.logo{font-size:19px;font-weight:700;color:var(--accent);letter-spacing:-.5px;display:flex;align-items:center;gap:7px}
+.logo-mark{width:22px;height:22px;flex-shrink:0;color:var(--accent)}
 .logo span{color:var(--text);font-weight:400}
 .topbar-r{margin-left:auto;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:10px}
 #saveIndicator{font-size:11px;color:var(--green);opacity:0;transition:opacity .3s}
@@ -130,15 +131,17 @@ a.skip-link:focus{left:0}
   display:inline-flex;align-items:center;justify-content:center;
   position:relative;width:30px;height:30px;border-radius:6px;cursor:pointer;
   font-size:13px;font-weight:700;color:var(--text);
+  border:1px solid transparent;transition:background .12s,border-color .12s
 }
-.fmtcolor:hover{background:var(--s2)}
+.fmtcolor:hover{background:var(--s2);border-color:var(--border)}
+.fmtcolor:focus-within{background:var(--al);border-color:var(--accent)}
 .fmtcolor input[type=color]{
   position:absolute;bottom:2px;left:4px;width:22px;height:6px;
   border:none;padding:0;cursor:pointer;opacity:.001
 }
-.fmtcolor::after{
-  content:'';position:absolute;bottom:3px;left:5px;width:20px;height:3px;
-  border-radius:1px;background:currentColor;pointer-events:none
+.fmtcolor .swatch-bar{
+  position:absolute;bottom:3px;left:5px;width:20px;height:3px;
+  border-radius:1px;pointer-events:none;background:#1a1a1a
 }
 #fmtColor{accent-color:#1a1a1a}
 @media(max-width:760px){
