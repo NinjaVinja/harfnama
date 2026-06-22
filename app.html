@@ -4,6 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Harfnama — Document to Handwritten Font Converter</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg"/>
 <meta name="description" content="Upload a PDF, Word, or text file and convert it into beautiful handwritten or custom fonts, including Urdu Nastaliq. Export as PDF, Word, PNG, or HTML — free and works in your browser."/>
 
 <!-- ════════════════════════════════════════════════
@@ -33,7 +34,13 @@
 <div class="ov" id="ov" role="status" aria-live="polite"><div class="ovbox"><div class="ovspin" aria-hidden="true">⏳</div><div class="ovmsg" id="ovmsg">Preparing...</div></div></div>
 
 <div class="topbar">
-  <div class="logo">Harf<span>nama</span></div>
+  <div class="logo">
+    <svg class="logo-mark" viewBox="0 0 60 60" aria-hidden="true">
+      <path d="M20 16 C8 22 6 36 18 42 C28 47 39 38 30 30 C24 25 14 30 14 38 C14 50 32 56 46 46 C58 38 58 18 46 10" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="46" cy="11" r="5" fill="var(--green)"/>
+    </svg>
+    Harf<span>nama</span>
+  </div>
   <div class="topbar-r">
     <span id="saveIndicator">💾 Saved</span>
     <span>PDF · DOCX · TXT → Lined Paper → Export</span>
@@ -225,11 +232,19 @@
 
       <label class="fmtcolor" title="Text color">
         <span aria-hidden="true">A</span>
-        <input type="color" id="fmtColor" value="#1a1a1a" onmousedown="event.stopPropagation()" oninput="fmtExec('foreColor', this.value)"/>
+        <input type="color" id="fmtColor" value="#1a1a1a"
+          onmousedown="saveSelectionForColor(event)"
+          onclick="saveSelectionForColor(event)"
+          oninput="applyColorFromPicker('foreColor',this.value)"
+          onchange="applyColorFromPicker('foreColor',this.value)"/>
       </label>
       <label class="fmtcolor" title="Highlight color">
         <span aria-hidden="true" style="text-decoration:underline">H</span>
-        <input type="color" id="fmtHighlight" value="#fff59d" onmousedown="event.stopPropagation()" oninput="fmtExec('hiliteColor', this.value)"/>
+        <input type="color" id="fmtHighlight" value="#fff59d"
+          onmousedown="saveSelectionForColor(event)"
+          onclick="saveSelectionForColor(event)"
+          oninput="applyColorFromPicker('hiliteColor',this.value)"
+          onchange="applyColorFromPicker('hiliteColor',this.value)"/>
       </label>
 
       <span class="fmt-sep"></span>
