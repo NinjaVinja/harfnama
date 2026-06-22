@@ -76,47 +76,6 @@ function getActivePageEl(){
   return pages.length?pages[pages.length-1].textEl:null;
 }
 
-/* ── Color picker: selection save/restore ─────────────────────────────────
-   The native <input type="color"> steals focus from the contentEditable page
-   the moment it is clicked/opened, which drops the text selection. We save
-   the full Range object on mousedown (before focus moves) and restore it
-   right before calling execCommand so the color actually lands on the text
-   the user had highlighted. */
-let savedColorRange=null;
-let savedColorPageEl=null;
-
-function saveSelectionForColor(e){
-  /* Stop the input from stealing focus so the selection is still alive when
-     oninput/onchange fires. For the color picker dialog this has no effect
-     (browser opens the OS picker), but it prevents a premature blur on the
-     label/input click itself. */
-  if(e) e.stopPropagation();
-  const sel=window.getSelection();
-  if(sel && sel.rangeCount){
-    savedColorRange=sel.getRangeAt(0).cloneRange();
-    savedColorPageEl=getActivePageEl();
-  }
-}
-
-function applyColorFromPicker(cmd, value){
-  const el=savedColorPageEl||getActivePageEl();
-  if(!el) return;
-  /* Restore the saved selection, then focus the page so execCommand works */
-  try{
-    if(savedColorRange){
-      el.focus();
-      const sel=window.getSelection();
-      sel.removeAllRanges();
-      sel.addRange(savedColorRange);
-    } else {
-      el.focus();
-    }
-    document.execCommand('styleWithCSS',false,true);
-    document.execCommand(cmd,false,value);
-  }catch(err){}
-  saveDraftDebounced();
-}
-
 function fmtExec(cmd,value){
   const el=getActivePageEl();
   if(!el)return;
@@ -124,9 +83,10 @@ function fmtExec(cmd,value){
   try{
     document.execCommand('styleWithCSS',false,true);
     document.execCommand(cmd,false,value);
-  }catch(err){}
+  }catch(err){ /* execCommand is legacy but still broadly supported for contentEditable */ }
   updateFmtButtonStates();
   saveDraftDebounced();
+  // formatting (especially size-changing ones) can overflow the page
   clearTimeout(fmtExec._t);
   fmtExec._t=setTimeout(()=>{ if(!paginating) flowOverflow(el); },300);
 }
